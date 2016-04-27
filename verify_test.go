@@ -26,14 +26,26 @@ func Test2x2System(t *testing.T) {
 	if !verification[1] {
 		t.Error("did not successfully verify equation 2")
 	}
+
+	badSolution := &Solution{
+		Funcs:        []DiffFunc{second2x2Solution, first2x2Solution},
+		NumConstants: 3,
+	}
+	verification = Verify(system, badSolution, 1000, nil)
+	if verification[0] {
+		t.Error("false positive for equation 1")
+	}
+	if verification[1] {
+		t.Error("false positive for equation 2")
+	}
 }
 
-func first2x2Solution(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
+func second2x2Solution(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
 	// k1 + k2*exp(-t)
 	return consts[0].Add(consts[1].Mul(x.MulScaler(-1).Exp()))
 }
 
-func second2x2Solution(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
+func first2x2Solution(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
 	// -k2/2 * t * exp(-t) + k3*exp(-t)
 
 	expInv := x.MulScaler(-1).Exp()
