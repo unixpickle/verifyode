@@ -40,6 +40,28 @@ func Test2x2System(t *testing.T) {
 	}
 }
 
+func Test2x2System2(t *testing.T) {
+	system := &System{
+		Size: 2,
+		Coefficients: []DiffPoly{
+			{2.0/25.0, 1}, {-1.0/50},
+			{-2.0/25.0}, {2.0/25.0, 1},
+		},
+		Outputs: []NumFunc{zeroNumFunc, zeroNumFunc},
+	}
+	solution := &Solution{
+		Funcs:        []DiffFunc{first2x2Solution2, second2x2Solution2},
+		NumConstants: 2,
+	}
+	verification := Verify(system, solution, 1000, nil)
+	if !verification[0] {
+		t.Error("did not successfully verify equation 1")
+	}
+	if !verification[1] {
+		t.Error("did not successfully verify equation 2")
+	}
+}
+
 func Test3x3Solution(t *testing.T) {
 	system := &System{
 		Size: 3,
@@ -101,6 +123,20 @@ func first3x3Solution(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff
 	term3 := coeff3.Mul(x.MulScaler(-1).Exp())
 	term4 := coeff4
 	return term1.Add(term2).Add(term3).Add(term4)
+}
+
+func first2x2Solution2(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
+	// k1*exp(-1/25 x) + k2*exp(-3/25 x)
+	exp1 := x.MulScaler(-1.0/25.0).Exp()
+	exp2 := x.MulScaler(-3.0/25.0).Exp()
+	return consts[0].Mul(exp1).Add(consts[1].Mul(exp2))
+}
+
+func second2x2Solution2(x *autodiff.DeepNum, consts []*autodiff.DeepNum) *autodiff.DeepNum {
+	// 2*k1*exp(-1/25 x) - 2*k2*exp(-3/25 x)
+	exp1 := x.MulScaler(-1.0/25.0).Exp().MulScaler(2)
+	exp2 := x.MulScaler(-3.0/25.0).Exp().MulScaler(2)
+	return consts[0].Mul(exp1).Sub(consts[1].Mul(exp2))
 }
 
 func zeroNumFunc(float64) float64 {
